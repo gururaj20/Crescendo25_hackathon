@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - EduAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --dark-blue: #2563eb;
+            --light-blue: #93c5fd;
+            --black-bg: #111827;
+            --black-container: #1f2937;
+            --white-text: #f9fafb;
+            --gray-text: #d1d5db;
+            --input-bg: #374151;
+            --error-red: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white-text);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .signup-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--black-container);
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .signup-header {
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            padding: 30px;
+            text-align: center;
+            color: var(--white-text);
+            border-bottom-left-radius: 80px;
+            border-bottom-right-radius: 80px;
+        }
+        
+        .signup-header h2 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .signup-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+            color: var(--light-blue);
+        }
+        
+        .signup-body {
+            padding: 30px;
+        }
+        
+        /* Role Selector */
+        .role-selector {
+            display: flex;
+            margin-bottom: 25px;
+            background: var(--black-bg);
+            border-radius: 12px;
+            padding: 5px;
+            position: relative;
+            border: 1px solid #374151;
+        }
+        
+        .role-selector::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 10px);
+            height: calc(100% - 10px);
+            background: var(--primary-blue);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+            opacity: 0.2;
+        }
+        
+        .role-selector[data-role="trainer"]::before {
+            transform: translateX(0);
+        }
+        
+        .role-selector[data-role="student"]::before {
+            transform: translateX(calc(100% + 5px));
+        }
+        
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            color: var(--gray-text);
+            border-radius: 8px;
+            min-width: 0;
+        }
+        
+        .role-btn:hover {
+            color: var(--white-text);
+        }
+        
+        .role-btn.active {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        
+        .form-control {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+            background: var(--input-bg);
+            color: var(--white-text);
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: var(--input-bg);
+            color: var(--white-text);
+        }
+        
+        .form-control:hover {
+            border-color: var(--primary-blue);
+        }
+        
+        .form-control::placeholder {
+            color: #6b7280;
+        }
+        
+        .form-label {
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
+        }
+        
+        .signup-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--primary-blue);
+            border: none;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .signup-btn:hover {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .signup-btn:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            color: var(--error-red);
+            font-size: 0.8rem;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: var(--input-bg);
+            border-radius: 2px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gray-text);
+            font-size: 0.8rem;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--black-container);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-icon {
+            font-size: 48px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .modal-message {
+            color: var(--gray-text);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            background: var(--primary-blue);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-btn:hover {
+            background: var(--dark-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-header">
+            <img src="./Images/logo.png" alt="Vishwakarma_Institute_of_Technology.jpg" width="48" height="48" style="margin-bottom:15px;">
+            <h2>EduAccess</h2>
+            <p>Create your account</p>
+        </div>
+        
+        <div class="signup-body">
+            <div class="role-selector" id="roleSelector" data-role="trainer">
+                <button class="role-btn trainer active" onclick="selectRole('trainer')">Trainer</button>
+                <button class="role-btn student" onclick="selectRole('student')">Student</button>
+            </div>
+            
+            <form id="signupForm">
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                    <div id="fullNameError" class="error-message">Please enter your full name</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" placeholder="Choose a username" required>
+                    <div id="usernameError" class="error-message">Username must be at least 4 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                    <div id="emailError" class="error-message">Please enter a valid email address</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Create Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Create a password" required>
+                    <div class="password-strength">
+                        <div class="strength-meter" id="strengthMeter"></div>
+                    </div>
+                    <div id="passwordError" class="error-message">Password must be at least 8 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                    <div id="confirmPasswordError" class="error-message">Passwords don't match</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="contactNo" class="form-label">Contact Number</label>
+                    <input type="tel" class="form-control" id="contactNo" placeholder="Enter your phone number" required>
+                    <div id="contactNoError" class="error-message">Please enter a valid phone number</div>
+                </div>
+                
+                <button type="submit" class="btn signup-btn" id="signupButton">
+                    <span id="signupText">Sign Up as Trainer</span>
+                    <span id="signupSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                </button>
+                
+                <div class="footer">
+                    Already have an account? <a href="login.html" style="color: var(--primary-blue);">Login here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="modal-icon">✓</div>
+            <h3 class="modal-title">Account Created Successfully!</h3>
+            <p class="modal-message" id="successMessage">Your trainer account has been created. You can now login with your credentials.</p>
+            <button class="modal-btn" onclick="redirectToLogin()">Continue to Login</button>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'trainer';
+        
+        function selectRole(role) {
+            currentRole = role;
+            
+            // Update active button and selector background
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.role-btn.${role}`).classList.add('active');
+            document.getElementById('roleSelector').setAttribute('data-role', role);
+            
+            // Update signup button text
+            document.getElementById('signupText').textContent = `Sign Up as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+        }
+        
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const strengthMeter = document.getElementById('strengthMeter');
+            let strength = 0;
+            
+            // Check for length
+            if (password.length >= 8) strength += 1;
+            if (password.length >= 12) strength += 1;
+            
+            // Check for special characters
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 1;
+            
+            // Check for numbers
+            if (/\d/.test(password)) strength += 1;
+            
+            // Check for uppercase and lowercase
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 1;
+            
+            // Update strength meter
+            let width = 0;
+            let color = '#ef4444'; // red
+            
+            if (strength <= 1) {
+                width = 25;
+                color = '#ef4444'; // red
+            } else if (strength <= 3) {
+                width = 50;
+                color = '#f59e0b'; // yellow
+            } else if (strength === 4) {
+                width = 75;
+                color = '#10b981'; // green
+            } else if (strength >= 5) {
+                width = 100;
+                color = '#10b981'; // green
+            }
+            
+            strengthMeter.style.width = width + '%';
+            strengthMeter.style.background = color;
+        });
+        
+        // Form validation
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const fullName = document.getElementById('fullName').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const contactNo = document.getElementById('contactNo').value.trim();
+            
+            // Validate fields
+            let isValid = true;
+            
+            // Full Name validation
+            if (fullName.length < 3) {
+                document.getElementById('fullNameError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('fullNameError').style.display = 'none';
+            }
+            
+            // Username validation
+            if (username.length < 4) {
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('usernameError').style.display = 'none';
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('emailError').style.display = 'none';
+            }
+            
+            // Password validation
+            if (password.length < 8) {
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('passwordError').style.display = 'none';
+            }
+            
+            // Confirm Password validation
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('confirmPasswordError').style.display = 'none';
+            }
+            
+            // Contact Number validation
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(contactNo)) {
+                document.getElementById('contactNoError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('contactNoError').style.display = 'none';
+            }
+            
+            if (!isValid) return;
+            
+            // Show loading state
+            const signupText = document.getElementById('signupText');
+            const signupSpinner = document.getElementById('signupSpinner');
+            const signupBtn = document.getElementById('signupButton');
+            
+            signupText.textContent = 'Creating Account...';
+            signupSpinner.style.display = 'inline-block';
+            signupBtn.disabled = true;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Hide loading state
+                signupText.textContent = `Sign Up as ${currentRole.charAt(0).toUpperCase() + currentRole.slice(1)}`;
+                signupSpinner.style.display = 'none';
+                signupBtn.disabled = false;
+                
+                // Show success modal
+                document.getElementById('successMessage').textContent = 
+                    `Your ${currentRole} account has been created. You can now login with your credentials.`;
+                document.getElementById('successModal').classList.add('active');
+            }, 2000);
+        });
+        
+        function redirectToLogin() {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --dark-blue: #2563eb;
+            --black-bg: #111827;
+            --black-container: #1f2937;
+            --white-text: #f9fafb;
+            --gray-text: #d1d5db;
+            --input-bg: #374151;
+        }
+        
+        body {
+            background-color: var(--black-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--white-text);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 60px 1fr;
+            min-height: 100vh;
+            height: 100vh;
+        }
+        
+        /* Header */
+        .dashboard-header {
+            grid-column: 2;
+            background-color: var(--black-container);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        /* Sidebar */
+        .dashboard-sidebar {
+            grid-row: 1 / span 2;
+            background-color: var(--black-container);
+            border-right: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+        
+        /* Main Content */
+        .dashboard-content {
+            background-color: var(--black-bg);
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+            gap: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+        }
+        
+        /* Content Sections */
+        .content-section {
+            display: none;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .content-section.active {
+            display: block;
+            height: 100%;
+        }
+        
+        /* Full-width card for sections */
+        .section-card {
+            background-color: var(--black-container);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-card {
+            background-color: var(--black-container);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-blue);
+        }
+        
+        .card-lg {
+            grid-column: span 2;
+        }
+        
+        .card-xl {
+            grid-column: 1 / -1;
+        }
+        
+        /* Widget Styles */
+        .progress {
+            height: 8px;
+            background-color: var(--black-bg);
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-blue);
+        }
+        
+        .badge-blue {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: var(--primary-blue);
+        }
+        
+        .btn-blue {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+        }
+        
+        .btn-blue:hover {
+            background-color: var(--dark-blue);
+        }
+        
+        /* Navigation */
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            color: var(--gray-text);
+            border-left: 4px solid transparent;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        
+        /* Calendar */
+        .calendar-day {
+            min-height: 80px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 5px;
+        }
+        
+        .calendar-day.today {
+            background-color: rgba(59, 130, 246, 0.05);
+            border: 1px solid var(--primary-blue);
+        }
+        
+        .event-badge {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            padding: 2px 5px;
+            display: block;
+        }
+        
+        /* Course List */
+        .course-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        .course-item:last-child {
+            border-bottom: none;
+        }
+        
+        .course-progress {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+        }
+        
+        /* Full height sections */
+        .full-height {
+            min-height: calc(100% - 40px);
+        }
+        
+        /* Calendar grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .calendar-header {
+            display: contents;
+        }
+        
+        .calendar-header > div {
+            text-align: center;
+            font-weight: bold;
+            padding: 10px 0;
+        }
+        
+        .calendar-body {
+            display: contents;
+        }
+        
+        .calendar-body > div {
+            min-height: 100px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 5px;
+        }
+        
+        .calendar-body > div.today {
+            background-color: rgba(59, 130, 246, 0.05);
+            border: 1px solid var(--primary-blue);
+        }
+        
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar">
+            <div class="text-center mb-4">
+                <img src="./Images/logo.png" alt="Logo" width="100" class="mb-2 logo">
+                <h5 class="text-white">EduAccess</h5>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="courses">
+                        <i class="fas fa-book-open"></i> My Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="catalog">
+                        <i class="fas fa-search"></i> Course Catalog
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="progress">
+                        <i class="fas fa-chart-line"></i> Progress
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="discussions">
+                        <i class="fas fa-comments"></i> Discussions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="calendar">
+                        <i class="fas fa-calendar-alt"></i> Calendar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="jobs">
+                        <i class="fas fa-briefcase"></i> Jobs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-section="surveys">
+                        <i class="fas fa-clipboard-list"></i> Surveys
+                    </a>
+                </li>
+                <li class="nav-item mt-4">
+                    <button class="btn btn-blue w-100 mx-2" data-bs-toggle="modal" data-bs-target="#joinClassModal">
+                        <i class="fas fa-plus"></i> Join Class
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="d-flex align-items-center">
+                <h5 class="mb-0" id="current-section">Student Dashboard</h5>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-blue dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle me-1"></i> John Doe
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="login.html"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+            <style>
+                /* Add this to fix catalog image sizes */
+                #catalog-section .card-img-top {
+                    height: 180px;
+                    object-fit: cover;
+                }
+            </style>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section active">
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); grid-auto-rows: minmax(150px, auto); gap: 20px;">
+                    <!-- Welcome Card -->
+                    <div class="dashboard-card card-lg">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4>Welcome back, John!</h4>
+                                <p class="text-muted mb-0" style="color: azure !important;" >You have 3 upcoming assignments this week</p>
+                            </div>
+                            <div class="text-end">
+                                <p class="mb-1">Current Semester: Spring 2023</p>
+                                <p class="mb-0">Overall Progress: <strong>65%</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Courses -->
+                    <div class="dashboard-card card-lg">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-book-open me-2"></i> My Courses</h5>
+                            <a href="" class="btn btn-sm btn-blue">View All</a>
+                        </div>
+                        <div class="course-item">
+                            <div class="course-progress">
+                                <div class="progress-circle" data-value="0.75">
+                                    <svg width="60" height="60" viewBox="0 0 36 36" class="circular-chart">
+                                        <path class="circle-bg" d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1f2937" stroke-width="3"/>
+                                        <path class="circle" stroke-dasharray="75, 100" d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                                        <text x="18" y="20.5" class="percentage" fill="#f9fafb" font-size="10" text-anchor="middle" dy=".3em">75%</text>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Introduction to Programming</h6>
+                                <small class="text-muted" style="color: azure !important;">Dr. Smith • CS101</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <button class="btn btn-sm btn-blue">Continue</button>
+                            </div>
+                        </div>
+                        <div class="course-item">
+                            <div class="course-progress">
+                                <div class="progress-circle" data-value="0.45">
+                                    <svg width="60" height="60" viewBox="0 0 36 36" class="circular-chart">
+                                        <path class="circle-bg" d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1f2937" stroke-width="3"/>
+                                        <path class="circle" stroke-dasharray="45, 100" d="M18 2.0845
+                                            a 15.9155 15.9155 0 0 1 0 31.831
+                                            a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                                        <text x="18" y="20.5" class="percentage" fill="#f9fafb" font-size="10" text-anchor="middle" dy=".3em">45%</text>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Web Development Basics</h6>
+                                <small class="text-muted" style="color: azure !important;">Prof. Johnson • WD200</small>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <button class="btn btn-sm btn-blue">Continue</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Assignments -->
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-tasks me-2"></i> Assignments</h5>
+                            <a href="#" class="btn btn-sm btn-blue">View All</a>
+                        </div>
+                        <div class="assignment-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Python Project</strong>
+                                <span class="badge bg-warning text-dark">Due Tomorrow</span>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">CS101 • Due May 10</small>
+                        </div>
+                        <div class="assignment-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Web Design</strong>
+                                <span class="badge bg-primary">Due in 3 days</span>
+                            </div>
+                            <small class="text-muted">WD200 • Due May 12</small>
+                        </div>
+                        <div class="assignment-item" >
+                            <div class="d-flex justify-content-between">
+                                <strong>Research Paper</strong>
+                                <span class="badge bg-secondary">Due in 1 week</span>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">ENG150 • Due May 15</small>
+                        </div>
+                    </div>
+
+                    <!-- Progress Overview -->
+                    <div class="dashboard-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i> Progress</h5>
+                        <div class="text-center mb-3">
+                            <div class="progress-circle-lg mx-auto" data-value="0.65">
+                                <svg width="120" height="120" viewBox="0 0 36 36" class="circular-chart">
+                                    <path class="circle-bg" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1f2937" stroke-width="3"/>
+                                    <path class="circle" stroke-dasharray="65, 100" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                                    <text x="18" y="20.5" class="percentage" fill="#f9fafb" font-size="10" text-anchor="middle" dy=".3em">65%</text>
+                                </svg>
+                            </div>
+                            <h5 class="mt-2">Overall Completion</h5>
+                        </div>
+                        <div class="skill-item mb-2">
+                            <small>Python Programming</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item mb-2">
+                            <small>HTML/CSS</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <small>JavaScript</small>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Widget -->
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-calendar-alt me-2"></i> Calendar</h5>
+                            <div>
+                                <button class="btn btn-sm btn-blue">View All</button>
+                            </div>
+                        </div>
+                        <div class="calendar-week">
+                            <div class="calendar-day text-center">
+                                <small>Mon</small>
+                                <div class="day-number">8</div>
+                            </div>
+                            <div class="calendar-day text-center">
+                                <small>Tue</small>
+                                <div class="day-number">9</div>
+                            </div>
+                            <div class="calendar-day text-center today">
+                                <small>Wed</small>
+                                <div class="day-number">10</div>
+                            </div>
+                            <div class="calendar-day text-center">
+                                <small>Thu</small>
+                                <div class="day-number">11</div>
+                            </div>
+                            <div class="calendar-day text-center">
+                                <small>Fri</small>
+                                <div class="day-number">12</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="event-item mb-2">
+                                <div class="event-badge">CS101 Exam</div>
+                                <small class="text-muted">Today, 10:00 AM</small>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-badge">WD200 Deadline</div>
+                                <small class="text-muted">Fri, 11:59 PM</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Discussions -->
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-comments me-2"></i> Discussions</h5>
+                            <a href="#" class="btn btn-sm btn-blue">View All</a>
+                        </div>
+                        <div class="discussion-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Python Question</strong>
+                                <small>2h ago</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">Posted in CS101 by Jane Doe</small>
+                        </div>
+                        <div class="discussion-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Project Help</strong>
+                                <small>5h ago</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">Posted in WD200 by John Smith</small>
+                        </div>
+                        <div class="discussion-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Exam Review</strong>
+                                <small>1d ago</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">Posted in CS101 by Prof. Smith</small>
+                        </div>
+                    </div>
+
+                    <!-- Job Opportunities -->
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-briefcase me-2"></i> Job Opportunities</h5>
+                            <a href="#" class="btn btn-sm btn-blue">View All</a>
+                        </div>
+                        <div class="job-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Junior Web Developer</strong>
+                                <small>TechCorp</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">New York • Full-time</small>
+                        </div>
+                        <div class="job-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>Python Intern</strong>
+                                <small>DataSystems</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">Remote • Internship</small>
+                        </div>
+                        <div class="job-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>UI Designer</strong>
+                                <small>CreativeStudio</small>
+                            </div>
+                            <small class="text-muted" style="color: azure !important;">Chicago • Part-time</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Courses Section -->
+            <div id="courses-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-book-open me-2"></i> My Courses</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="course-card p-4 rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="course-icon bg-primary rounded-circle p-3 me-3">
+                                        <i class="fas fa-code text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Introduction to Programming</h5>
+                                        <p class="text-muted mb-0" style="color: azure !important;">CS101 • Dr. Smith</p>
+                                    </div>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted" style="color: azure !important;">75% Complete</span>
+                                    <a href="#" class="btn btn-sm btn-blue">Continue</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="course-card p-4 rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="course-icon bg-success rounded-circle p-3 me-3">
+                                        <i class="fas fa-globe text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Web Development Basics</h5>
+                                        <p class="text-muted mb-0" style="color: azure !important;">WD200 • Prof. Johnson</p>
+                                    </div>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted" style="color: azure !important;">45% Complete</span>
+                                    <a href="#" class="btn btn-sm btn-blue">Continue</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="course-card p-4 rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="course-icon bg-warning rounded-circle p-3 me-3">
+                                        <i class="fas fa-pen text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5>English Composition</h5>
+                                        <p class="text-muted mb-0" style="color: azure !important;">ENG150 • Prof. Williams</p>
+                                    </div>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted" style="color: azure !important;">30% Complete</span>
+                                    <a href="#" class="btn btn-sm btn-blue">Continue</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="course-card p-4 rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="course-icon bg-info rounded-circle p-3 me-3">
+                                        <i class="fas fa-database text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h5>Database Fundamentals</h5>
+                                        <p class="text-muted mb-0" style="color: azure !important;">CS210 • Dr. Brown</p>
+                                    </div>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted" style="color: azure !important;">15% Complete</span>
+                                    <a href="#" class="btn btn-sm btn-blue">Continue</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Catalog Section -->
+            <div id="catalog-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-search me-2"></i> Course Catalog</h3>
+                    <div class="input-group mb-4 mt-3">
+                        <input type="text" class="form-control" placeholder="Search courses...">
+                        <button class="btn btn-blue" type="button">Search</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\python.jpg" class="card-img-top" alt="python">
+                                <div class="card-body">
+                                    <h5 class="card-title">Advanced Python</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Master advanced Python concepts and frameworks.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">CS301</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\react.jpg" class="card-img-top" alt="react.jpg">
+                                <div class="card-body">
+                                    <h5 class="card-title">React Masterclass</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Build modern web apps with React and Redux.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">WD310</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\machinelearnin.jpg" class="card-img-top" alt="MachineLearning.jpg">
+                                <div class="card-body">
+                                    <h5 class="card-title">Machine Learning</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Introduction to ML algorithms with Python.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">DS400</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\mobiledev.jpg" class="card-img-top" alt="MobileDevelopment.jpg">
+                                <div class="card-body">
+                                    <h5 class="card-title">Mobile App Development</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Build cross-platform mobile apps with Flutter.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">MD350</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\cloudcom.jpg" class="card-img-top" alt="Cloud Computing">
+                                <div class="card-body">
+                                    <h5 class="card-title">Cloud Computing</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Learn AWS, Azure, and Google Cloud platforms.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">CC410</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="Images\ai.jpg" class="card-img-top" alt="Artificial Intelligence">
+                                <div class="card-body">
+                                    <h5 class="card-title">Artificial Intelligence</h5>
+                                    <p class="card-text text-muted" style="color: azure !important;">Fundamentals of AI and neural networks.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">AI500</span>
+                                        <button class="btn btn-sm btn-blue">Enroll</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div id="progress-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-chart-line me-2"></i> My Progress</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="progress-card p-4 mb-4 rounded">
+                                <h5 class="mb-4">Overall Completion</h5>
+                                <div class="text-center">
+                                    <div class="progress-circle-lg mx-auto" data-value="0.65">
+                                        <svg width="180" height="180" viewBox="0 0 36 36" class="circular-chart">
+                                            <path class="circle-bg" d="M18 2.0845
+                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1f2937" stroke-width="3"/>
+                                            <path class="circle" stroke-dasharray="65, 100" d="M18 2.0845
+                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                                            <text x="18" y="20.5" class="percentage" fill="#f9fafb" font-size="10" text-anchor="middle" dy=".3em">65%</text>
+                                        </svg>
+                                    </div>
+                                    <h4 class="mt-3">65% Complete</h4>
+                                    <p class="text-muted" style="color: azure !important;">Current semester progress</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="skills-card p-4 rounded">
+                                <h5 class="mb-4">Skill Progress</h5>
+                                <div class="skill-item mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Python Programming</span>
+                                        <span>80%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 80%;"></div>
+                                    </div>
+                                </div>
+                                <div class="skill-item mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>HTML/CSS</span>
+                                        <span>65%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 65%;"></div>
+                                    </div>
+                                </div>
+                                <div class="skill-item mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>JavaScript</span>
+                                        <span>40%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 40%;"></div>
+                                    </div>
+                                </div>
+                                <div class="skill-item mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Database Design</span>
+                                        <span>30%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 30%;"></div>
+                                    </div>
+                                </div>
+                                <div class="skill-item">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>UI/UX Design</span>
+                                        <span>25%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="mb-3">Course Progress Details</h5>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Course</th>
+                                            <th>Instructor</th>
+                                            <th>Progress</th>
+                                            <th>Last Activity</th>
+                                            <th>Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Introduction to Programming</td>
+                                            <td>Dr. Smith</td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar" style="width: 75%;"></div>
+                                                </div>
+                                                <small>75%</small>
+                                            </td>
+                                            <td>2 days ago</td>
+                                            <td>A</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Web Development Basics</td>
+                                            <td>Prof. Johnson</td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar" style="width: 45%;"></div>
+                                                </div>
+                                                <small>45%</small>
+                                            </td>
+                                            <td>1 week ago</td>
+                                            <td>B+</td>
+                                        </tr>
+                                        <tr>
+                                            <td>English Composition</td>
+                                            <td>Prof. Williams</td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar" style="width: 30%;"></div>
+                                                </div>
+                                                <small>30%</small>
+                                            </td>
+                                            <td>3 days ago</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Database Fundamentals</td>
+                                            <td>Dr. Brown</td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar" style="width: 15%;"></div>
+                                                </div>
+                                                <small>15%</small>
+                                            </td>
+                                            <td>2 weeks ago</td>
+                                            <td>-</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discussions Section -->
+            <div id="discussions-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-comments me-2"></i> Discussions</h3>
+                    <div class="input-group mb-4 mt-3">
+                        <input type="text" class="form-control" placeholder="Search discussions...">
+                        <button class="btn btn-blue" type="button">Search</button>
+                    </div>
+                    <div class="discussion-list">
+                        <div class="discussion-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Python Question</h5>
+                                <span class="badge bg-primary">CS101</span>
+                            </div>
+                            <p class="text-muted" style="color: azure !important;">Posted by Jane Doe • 2 hours ago</p>
+                            <p>I'm having trouble understanding how decorators work in Python. Can someone explain with a simple example?</p>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="me-3"><i class="fas fa-thumbs-up me-1"></i> 5</span>
+                                    <span><i class="fas fa-comment me-1"></i> 3 replies</span>
+                                </div>
+                                <button class="btn btn-sm btn-blue">Reply</button>
+                            </div>
+                        </div>
+                        <div class="discussion-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Project Help Needed</h5>
+                                <span class="badge bg-primary">WD200</span>
+                            </div>
+                            <p class="text-muted" style="color: azure !important;">Posted by John Smith • 5 hours ago</p>
+                            <p>I'm stuck on implementing the responsive navigation for our group project. Any suggestions?</p>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="me-3"><i class="fas fa-thumbs-up me-1"></i> 2</span>
+                                    <span><i class="fas fa-comment me-1"></i> 1 reply</span>
+                                </div>
+                                <button class="btn btn-sm btn-blue">Reply</button>
+                            </div>
+                        </div>
+                        <div class="discussion-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Exam Review Session</h5>
+                                <span class="badge bg-primary">CS101</span>
+                            </div>
+                            <p class="text-muted" style="color: azure !important;">Posted by Prof. Smith • 1 day ago</p>
+                            <p>I'll be holding an exam review session tomorrow at 3 PM in the main lecture hall. Bring your questions!</p>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="me-3"><i class="fas fa-thumbs-up me-1"></i> 12</span>
+                                    <span><i class="fas fa-comment me-1"></i> 5 replies</span>
+                                </div>
+                                <button class="btn btn-sm btn-blue">Reply</button>
+                            </div>
+                        </div>
+                        <div class="discussion-item p-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Database Assignment Clarification</h5>
+                                <span class="badge bg-primary">CS210</span>
+                            </div>
+                            <p class="text-muted" style="color: azure !important;">Posted by Alex Johnson • 2 days ago</p>
+                            <p>For the database assignment, are we allowed to use NoSQL databases or should we stick to relational?</p>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="me-3"><i class="fas fa-thumbs-up me-1"></i> 3</span>
+                                    <span><i class="fas fa-comment me-1"></i> 2 replies</span>
+                                </div>
+                                <button class="btn btn-sm btn-blue">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5>Start a New Discussion</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label for="discussionTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="discussionTitle" placeholder="Enter discussion title">
+                            </div>
+                            <div class="mb-3">
+                                <label for="discussionCourse" class="form-label">Course</label>
+                                <select class="form-select" id="discussionCourse">
+                                    <option selected>Select a course</option>
+                                    <option>CS101 - Introduction to Programming</option>
+                                    <option>WD200 - Web Development Basics</option>
+                                    <option>ENG150 - English Composition</option>
+                                    <option>CS210 - Database Fundamentals</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="discussionContent" class="form-label">Content</label>
+                                <textarea class="form-control" id="discussionContent" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-blue">Post Discussion</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div id="calendar-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-calendar-alt me-2"></i> Calendar</h3>
+                    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+                        <h4>May 2023</h4>
+                        <div>
+                            <button class="btn btn-sm btn-blue me-2"><i class="fas fa-chevron-left"></i></button>
+                            <button class="btn btn-sm btn-blue"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-header">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div class="calendar-body">
+                            <div class="calendar-day">
+                                <div class="day-number">30</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">1</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">2</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">3</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">4</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">5</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">6</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">7</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">8</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">9</div>
+                            </div>
+                            <div class="calendar-day today">
+                                <div class="day-number">10</div>
+                                <div class="event-badge">CS101 Exam</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">11</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">12</div>
+                                <div class="event-badge">WD200 Deadline</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">13</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">14</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">15</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">16</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">17</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">18</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">19</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">20</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">21</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">22</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">23</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">24</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">25</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">26</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">27</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">28</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">29</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">30</div>
+                            </div>
+                            <div class="calendar-day">
+                                <div class="day-number">31</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="mb-3">Upcoming Events</h5>
+                        <div class="event-item p-3 mb-2 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">CS101 Exam</h6>
+                                    <small class="text-muted" style="color: azure !important;">Today, 10:00 AM - 11:30 AM</small>
+                                </div>
+                                <span class="badge bg-warning text-dark">In Progress</span>
+                            </div>
+                        </div>
+                        <div class="event-item p-3 mb-2 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">WD200 Project Deadline</h6>
+                                    <small class="text-muted" style="color: azure !important;">May 12, 11:59 PM</small>
+                                </div>
+                                <span class="badge bg-primary">Upcoming</span>
+                            </div>
+                        </div>
+                        <div class="event-item p-3 mb-2 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Study Group Session</h6>
+                                    <small class="text-muted" style="color: azure !important;">May 14, 2:00 PM - 4:00 PM</small>
+                                </div>
+                                <span class="badge bg-primary">Upcoming</span>
+                            </div>
+                        </div>
+                        <div class="event-item p-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Career Fair</h6>
+                                    <small class="text-muted" style="color: azure !important;">May 18, 9:00 AM - 5:00 PM</small>
+                                </div>
+                                <span class="badge bg-primary">Upcoming</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="mb-3">Add New Event</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label for="eventTitle" class="form-label">Event Title</label>
+                                <input type="text" class="form-control" id="eventTitle" placeholder="Enter event title">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="eventDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="eventDate">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="startTime" class="form-label">Start Time</label>
+                                    <input type="time" class="form-control" id="startTime">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="endTime" class="form-label">End Time</label>
+                                    <input type="time" class="form-control" id="endTime">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="eventDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-blue">Add Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jobs Section -->
+            <div id="jobs-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-briefcase me-2"></i> Job Opportunities</h3>
+                    <div class="input-group mb-4 mt-3">
+                        <input type="text" class="form-control" placeholder="Search jobs...">
+                        <button class="btn btn-blue" type="button">Search</button>
+                    </div>
+                    <div class="job-list">
+                        <div class="job-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">Junior Web Developer</h5>
+                                    <p class="text-muted mb-1">TechCorp • New York, NY</p>
+                                </div>
+                                <span class="badge bg-success">Full-time</span>
+                            </div>
+                            <p class="mb-3">Looking for a junior web developer with experience in HTML, CSS, and JavaScript. Knowledge of React is a plus.</p>
+                            <div class="d-flex justify-content-between">
+                                <small>Posted 2 days ago</small>
+                                <button class="btn btn-sm btn-blue">Apply</button>
+                            </div>
+                        </div>
+                        <div class="job-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">Python Intern</h5>
+                                    <p class="text-muted mb-1" style="color: azure !important;">DataSystems • Remote</p>
+                                </div>
+                                <span class="badge bg-info">Internship</span>
+                            </div>
+                            <p class="mb-3">Summer internship for Python developers. Work on real-world data analysis projects with our team.</p>
+                            <div class="d-flex justify-content-between">
+                                <small>Posted 1 week ago</small>
+                                <button class="btn btn-sm btn-blue">Apply</button>
+                            </div>
+                        </div>
+                        <div class="job-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">UI/UX Designer</h5>
+                                    <p class="text-muted mb-1" style="color: azure !important;">CreativeStudio • Chicago, IL</p>
+                                </div>
+                                <span class="badge bg-secondary">Part-time</span>
+                            </div>
+                            <p class="mb-3">Part-time UI/UX designer needed to help redesign our client portals. Must have Figma experience.</p>
+                            <div class="d-flex justify-content-between">
+                                <small>Posted 3 days ago</small>
+                                <button class="btn btn-sm btn-blue">Apply</button>
+                            </div>
+                        </div>
+                        <div class="job-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">Database Administrator</h5>
+                                    <p class="text-muted mb-1" style="color: azure !important;">Enterprise Solutions • Boston, MA</p>
+                                </div>
+                                <span class="badge bg-success">Full-time</span>
+                            </div>
+                            <p class="mb-3">Entry-level DBA position. Will train on SQL Server and Oracle systems. Computer Science degree required.</p>
+                            <div class="d-flex justify-content-between">
+                                <small>Posted 5 days ago</small>
+                                <button class="btn btn-sm btn-blue">Apply</button>
+                            </div>
+                        </div>
+                        <div class="job-item p-3 rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">Technical Writer</h5>
+                                    <p class="text-muted mb-1" style="color: azure !important;">DocuTech • Remote</p>
+                                </div>
+                                <span class="badge bg-secondary">Part-time</span>
+                            </div>
+                            <p class="mb-3">Create documentation for software products. Experience with Markdown and API documentation preferred.</p>
+                            <div class="d-flex justify-content-between">
+                                <small>Posted 1 day ago</small>
+                                <button class="btn btn-sm btn-blue">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="mb-3">Job Search Preferences</h5>
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="jobType" class="form-label">Job Type</label>
+                                    <select class="form-select" id="jobType" multiple>
+                                        <option selected>Full-time</option>
+                                        <option>Part-time</option>
+                                        <option>Internship</option>
+                                        <option>Contract</option>
+                                        <option>Remote</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="jobLocation" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="jobLocation" placeholder="Enter preferred locations">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jobSkills" class="form-label">Skills</label>
+                                <input type="text" class="form-control" id="jobSkills" placeholder="Enter your skills (comma separated)">
+                            </div>
+                            <button type="submit" class="btn btn-blue">Save Preferences</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surveys Section -->
+            <div id="surveys-section" class="content-section">
+                <div class="section-card">
+                    <h3><i class="fas fa-clipboard-list me-2"></i> Surveys</h3>
+                    <div class="survey-list mt-4">
+                        <div class="survey-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Course Feedback: CS101</h5>
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            </div>
+                            <p class="text-muted mb-3" style="color: azure !important;">Please provide feedback on your Introduction to Programming course.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>Due: May 15, 2023</small>
+                                <button class="btn btn-sm btn-blue">Take Survey</button>
+                            </div>
+                        </div>
+                        <div class="survey-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Instructor Evaluation: Prof. Johnson</h5>
+                                <span class="badge bg-success">Completed</span>
+                            </div>
+                            <p class="text-muted mb-3" style="color: azure !important;">Evaluate your instructor for the Web Development Basics course.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>Completed: May 5, 2023</small>
+                                <button class="btn btn-sm btn-secondary">View Results</button>
+                            </div>
+                        </div>
+                        <div class="survey-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Campus Facilities Survey</h5>
+                                <span class="badge bg-primary">New</span>
+                            </div>
+                            <p class="text-muted mb-3" style="color: azure !important;">Help us improve campus facilities by sharing your experience.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>Due: May 20, 2023</small>
+                                <button class="btn btn-sm btn-blue">Take Survey</button>
+                            </div>
+                        </div>
+                        <div class="survey-item p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Career Services Feedback</h5>
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            </div>
+                            <p class="text-muted mb-3" style="color: azure !important;">Tell us about your experience with the Career Services office.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>Due: May 25, 2023</small>
+                                <button class="btn btn-sm btn-blue">Take Survey</button>
+                            </div>
+                        </div>
+                        <div class="survey-item p-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Library Services Survey</h5>
+                                <span class="badge bg-primary">New</span>
+                            </div>
+                            <p class="text-muted mb-3" style="color: azure !important;">Help us improve our library resources and services.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>Due: May 30, 2023</small>
+                                <button class="btn btn-sm btn-blue">Take Survey</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Join Class Modal -->
+    <div class="modal fade" id="joinClassModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">Join New Class</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="classCode" class="form-label">Class Code</label>
+                        <input type="text" class="form-control" id="classCode" placeholder="Enter class code provided by your instructor">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-blue">Join Class</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Set current date in calendar
+        document.querySelector('.today .day-number').textContent = new Date().getDate();
+        
+        // Join class form handler
+        document.querySelector('#joinClassModal .btn-blue').addEventListener('click', function() {
+            const classCode = document.getElementById('classCode').value;
+            if (classCode) {
+                alert(`Joining class with code: ${classCode}`);
+                // Here you would typically make an API call to join the class
+                var modal = bootstrap.Modal.getInstance(document.getElementById('joinClassModal'));
+                modal.hide();
+            }
+        });
+        
+        // Navigation functionality
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show the selected section
+                const sectionId = this.getAttribute('data-section') + '-section';
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Update header title
+                const sectionTitles = {
+                    'dashboard': 'Student Dashboard',
+                    'courses': 'My Courses',
+                    'catalog': 'Course Catalog',
+                    'progress': 'My Progress',
+                    'discussions': 'Discussions',
+                    'calendar': 'Calendar',
+                    'jobs': 'Job Opportunities',
+                    'surveys': 'Surveys'
+                };
+                document.getElementById('current-section').textContent = sectionTitles[this.getAttribute('data-section')];
+            });
+        });
+    </script>
+</body>
+</html>
